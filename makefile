@@ -1,5 +1,5 @@
-OBJS	= main.o
-SOURCE	= main.cpp
+OBJS	= test.o
+SOURCE	= test.cpp
 HEADER	= 
 OUT		= myrio.out
 SUBDIR  = myrio
@@ -13,8 +13,8 @@ all: $(OBJS)
 	cd $(SUBDIR) && make
 	$(CC) $(CFLAGS) $(INCLUDE) -g $(OBJS) -o $(OUT)  $(LFLAGS)
 
-main.o: main.cpp
-	$(CC) $(CFLAGS) $(INCLUDE) $(FLAGS) main.cpp
+test.o: test.cpp
+	$(CC) $(CFLAGS) $(INCLUDE) $(FLAGS) test.cpp
 
 clean:
 	cd $(SUBDIR) && make clean
