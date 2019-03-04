@@ -1,5 +1,5 @@
-OBJS	= Utils.o Motor_Controller.o I2C.o
-SOURCE	= Utils.cpp Motor_Controller.cpp I2C.c
+OBJS	= Utils.o Motor_Controller.o I2C.o DIO.o
+SOURCE	= Utils.cpp Motor_Controller.cpp I2C.c DIO.c
 HEADER	= 
 OUT		= libmyrio.a
 SUBDIR  = csupport
@@ -11,7 +11,6 @@ LFLAGS 	= -Lcsupport -lcsupport -ldl
 
 
 all: $(OBJS)
-	cd $(SUBDIR) && make
 	ar cr $(OUT) csupport/libcsupport.a $(OBJS)
 
 Utils.o: Utils.cpp
@@ -23,9 +22,11 @@ Motor_Controller.o: Motor_Controller.cpp
 I2C.o: I2C.c
 	$(CC) $(CFLAGS) $(INCLUDE) $(FLAGS) I2C.c
 
+DIO.o: DIO.c
+	$(CC) $(CFLAGS) $(INCLUDE) $(FLAGS) DIO.c
+
 
 clean:
-	cd $(SUBDIR) && make clean
 	rm -f $(OBJS) $(OUT)
 
 
