@@ -4,8 +4,17 @@
 
 using namespace std;
 
+Motor_Controller::Motor_Controller()
+{
+
+}
+
 Motor_Controller::Motor_Controller(MyRio_I2c* i2c)
 {
+	this->i2c = i2c;
+}
+
+void Motor_Controller::addI2c(MyRio_I2c* i2c){
 	this->i2c = i2c;
 }
 

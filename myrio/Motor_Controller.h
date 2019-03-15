@@ -29,7 +29,10 @@ private:
 
 public:
 
-	Motor_Controller(MyRio_I2c* i2c);
+    Motor_Controller();
+    Motor_Controller(MyRio_I2c* i2c);
+
+    void addI2c(MyRio_I2c* i2c);
 
 	void waitFor (unsigned int secs);
 
