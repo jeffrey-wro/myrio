@@ -65,3 +65,8 @@ void Utils::waitFor (unsigned int secs) {
     int retTime = time(0) + secs;   // Get finishing time.
     while (time(0) < retTime);               // Loop until it arrives.
 }
+
+void Utils::waitForMicro (int micro_seconds) {
+    clock_t start_time = clock(); 
+    while (clock() < start_time + micro_seconds);
+}
