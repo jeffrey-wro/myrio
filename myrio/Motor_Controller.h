@@ -1,6 +1,7 @@
 #ifndef MOTOR_CONTROLLER_H_
 #define MOTOR_CONTROLLER_H_
 
+#include "MyRio.h"
 #include "I2C.h"
 
 
@@ -25,14 +26,14 @@ enum SERVO_CHANNEL{
 
 class Motor_Controller {
 private:
-	MyRio_I2c* i2c;
+	MyRio_I2c i2c;
 
 public:
 
     Motor_Controller();
     Motor_Controller(MyRio_I2c* i2c);
 
-    void addI2c(MyRio_I2c* i2c);
+    NiFpga_Status init(NiFpga_Session* myrio_session);
 
 	void waitFor (unsigned int secs);
 
@@ -71,6 +72,7 @@ public:
     void setCRServoState(int address, uint8_t channel, uint8_t servospeed);
 
     uint8_t readServoPosition(int address, uint8_t channel);
+
 
 
     /********************************************
