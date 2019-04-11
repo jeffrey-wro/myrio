@@ -6,7 +6,10 @@
 #include "I2C.h"
 #include <time.h>
 
-
+/*
+ *  Setup I2C on port B
+ * return the fpga status
+ */
 NiFpga_Status Utils::setupI2CB(NiFpga_Session* myrio_session, MyRio_I2c* i2c){
 
 	NiFpga_Status status;
@@ -61,11 +64,18 @@ NiFpga_Status Utils::setupI2CB(NiFpga_Session* myrio_session, MyRio_I2c* i2c){
 }
 
 
+
+/*
+ *  Wait for a specified amount of seconds
+ */
 void Utils::waitFor (unsigned int secs) {
     int retTime = time(0) + secs;   // Get finishing time.
     while (time(0) < retTime);               // Loop until it arrives.
 }
 
+/*
+ *  Wait for a specified amount of microseconds
+ */
 void Utils::waitForMicro (int micro_seconds) {
     clock_t start_time = clock(); 
     while (clock() < start_time + micro_seconds);
