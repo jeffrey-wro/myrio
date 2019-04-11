@@ -5,14 +5,19 @@
 #include "I2C.h"
 
 
+// List of devices addresses
 enum ADDRESS{
 	DC = 1,
 	SERVO = 2
 };
+
+// List of DC motor channels
 enum DC_CHANNEL{
 	DC_1 = 0,
 	DC_2 = 1,
 };
+
+// List of SERVO motor channels
 enum SERVO_CHANNEL{
 	SERVO_1 = 1,
 	SERVO_2 = 2,
@@ -30,12 +35,9 @@ private:
 
 public:
 
-    Motor_Controller();
     Motor_Controller(MyRio_I2c* i2c);
 
     NiFpga_Status init(NiFpga_Session* myrio_session);
-
-	void waitFor (unsigned int secs);
 
 	//controller function
     void controllerEnable(int address);
@@ -84,17 +86,6 @@ public:
      void WDT_STOP(int address);
      void setExpID(int newID);
      int readExpID();
-
-
-
-
-
-
-
-
-
-
-
 
 
      */

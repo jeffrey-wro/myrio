@@ -5,30 +5,42 @@
 
 using namespace std;
 
-Motor_Controller::Motor_Controller()
-{
-
-}
 
 Motor_Controller::Motor_Controller(MyRio_I2c* i2c)
 {
 	this->i2c = *i2c;
 }
 
+/*
+ * This initialize the I2C port
+ * Must call this function before using any of the motor controller function function
+ * return the fpga status
+ */
 NiFpga_Status Motor_Controller::init(NiFpga_Session* myrio_session){
 	return Utils::setupI2CB(myrio_session, &i2c);
 }
 
+
+/*
+ * This function enable a I2C device from its address
+ * Must enable all device required before use.
+ */
 void Motor_Controller::controllerEnable(int address){
 	uint8_t data[1] = {0x25};
 	I2c_Write(&i2c, address, data, 1);
 }
 
+/*
+ * Reset one of the I2C device
+ */
 void Motor_Controller::controllerReset(int address){
 	uint8_t data[1] = {0x27};
 	I2c_Write(&i2c, address, data, 1);
 }
 
+/*
+ * Return the battery voltage in centivolt
+ */
 int Motor_Controller::readBatteryVoltage(int address){
 	uint8_t data[2] = {0x53};
 	I2c_Write(&i2c, address, data, 1);
@@ -37,6 +49,9 @@ int Motor_Controller::readBatteryVoltage(int address){
 	return data[0]<<8 | data[1];
 }
 
+/*
+ *
+ */
 int Motor_Controller::readFirmware(int address)
 {
 	uint8_t data[1] = {0x26};
@@ -47,15 +62,21 @@ int Motor_Controller::readFirmware(int address)
 	return data[0];
 }
 
+    
+
+/***********************************
+ *    _   _ 
+ *   | \ /  
+ *   |_/ \_ 
+ *       
+ * DC
+************************************/
 
 
-
-/***********************/
-/****DC*****************/
-/***********************/
-
-
-
+/*
+ * Set the constant speed of DC motor
+ * The speed range is 0 to 720 degrees per second
+ */
 void Motor_Controller::setMotorSpeed(int address, uint8_t channel, long speed)
 {
 
@@ -69,6 +90,10 @@ void Motor_Controller::setMotorSpeed(int address, uint8_t channel, long speed)
 	I2c_Write(&i2c, address, data, 3);
 }
 
+/*
+ * Set the constant speed of both DC motor
+ * The speed range is (+/-) 0 to 720 degrees per second
+ */
 void Motor_Controller::setMotorSpeeds(int address, long speed1, long speed2)
 {
 
@@ -83,7 +108,13 @@ void Motor_Controller::setMotorSpeeds(int address, long speed1, long speed2)
 	I2c_Write(&i2c, address, data, 5);
 }
 
-
+/*
+ *Sets the power level
+ * The power range is (+/-) 0 to 100.
+ * Stop mode
+ *  coast mode -> 0
+ *  brake mode -> 125
+ */
 void Motor_Controller::setMotorPower(int address, uint8_t channel, uint8_t power)
 {
 
@@ -96,12 +127,27 @@ void Motor_Controller::setMotorPower(int address, uint8_t channel, uint8_t power
 	I2c_Write(&i2c, address, data, 2);
 
 }
+
+
+/*
+ *Sets the power level of both DC motor
+ * The power range is (+/-) 0 to 100.
+ * Stop mode
+ *  coast mode -> 0
+ *  brake mode -> 125
+ */
 void Motor_Controller::setMotorPowers(int address, uint8_t power1, uint8_t power2)
 {
 	uint8_t data[3] = {0x42, power1, power2};
 	I2c_Write(&i2c, address, data, 3);
 }
 
+
+/*
+ * Implements velocity and positional PID control to set the constant speed and the degree target holding position of one DC motor
+ * The speed range is (+/-) 0 to 720 degrees per second
+ * The encoder degrees target position is a signed long integer from -536,870,912 to 536,870,911 with a 1-degree resolution
+ */
 void Motor_Controller::setMotorDegree(int address, uint8_t channel, long speed, long degrees)
 {
 
@@ -120,6 +166,11 @@ void Motor_Controller::setMotorDegree(int address, uint8_t channel, long speed, 
 	uint8_t data[7] = {channel, hibyte, lobyte, one, two, three, four};
 	I2c_Write(&i2c, address, data, 7);
 }
+/*
+ * Implements velocity and positional PID control to set the constant speed and the degree target holding position of both DC motor
+ * The speed range is (+/-) 0 to 720 degrees per second
+ * The encoder degrees target position is a signed long integer from -536,870,912 to 536,870,911 with a 1-degree resolution
+ */
 void Motor_Controller::setMotorDegrees(int address, long speed1, long degrees1, long speed2, long degrees2)
 {
 	uint8_t lobyte1 = speed1 & 0xff;
@@ -143,6 +194,12 @@ void Motor_Controller::setMotorDegrees(int address, long speed1, long degrees1, 
 
 }
 
+/*
+ * Implements velocity and positional PID control to set the constant speed and the encoder count target holding position of one DC motor
+ * The speed range is (+/-) 0 to 720 degrees per second
+ * The encoder count target position is a signed long integer from -2,147,483,648 to 2,147,483,647
+ * Each encoder count = 1/4-degree resolution
+ */
 void Motor_Controller::setMotorTarget(int address, uint8_t channel, long speed, long target)
 {
 
@@ -161,6 +218,12 @@ void Motor_Controller::setMotorTarget(int address, uint8_t channel, long speed, 
 	I2c_Write(&i2c, address, data, 7);
 
 }
+/*
+ * Implements velocity and positional PID control to set the constant speed and the encoder count target holding position of both DC motor
+ * The speed range is (+/-) 0 to 720 degrees per second
+ * The encoder count target position is a signed long integer from -2,147,483,648 to 2,147,483,647
+ * Each encoder count = 1/4-degree resolution
+ */
 void Motor_Controller::setMotorTargets(int address, long speed1, long target1, long speed2, long target2)
 {
 	uint8_t lobyte1 = speed1 & 0xff;
@@ -183,6 +246,9 @@ void Motor_Controller::setMotorTargets(int address, long speed1, long target1, l
 	I2c_Write(&i2c, address, data, 13);
 }
 
+/*
+ * Sets the P, I, and D coefficients for constant speed control.
+ */
 void Motor_Controller::setMotorSpeedPID(int address, int P, int I, int D)
 {
 	uint8_t lobyteP = P & 0xff;
@@ -198,6 +264,10 @@ void Motor_Controller::setMotorSpeedPID(int address, int P, int I, int D)
 	I2c_Write(&i2c, address, data, 7);
 
 }
+
+/*
+ * Sets the P, I, and D coefficients for target hold position control.
+ */
 void Motor_Controller::setMotorTargetPID(int address, int P, int I, int D)
 {
 	uint8_t lobyteP = P & 0xff;
@@ -213,6 +283,9 @@ void Motor_Controller::setMotorTargetPID(int address, int P, int I, int D)
 	I2c_Write(&i2c, address, data, 7);
 }
 
+/*
+ * Invert the default dirrection of one motor 
+ */
 void Motor_Controller::setMotorInvert(int address, uint8_t channel, uint8_t invert)
 {
 	if(channel==DC_1){ channel = 0x51; }
@@ -222,7 +295,13 @@ void Motor_Controller::setMotorInvert(int address, uint8_t channel, uint8_t inve
 	I2c_Write(&i2c, address, data, 2);;
 }
 
-
+/*
+ * Reads the encoder count value
+ * Each 1/4 degree count, or 1 degree of rotation equals 4 encoder counts
+ * The total count accumulation can range from -2,147,483,648 to 2,147,483,647
+ * A clockwise rotation adds to the count value, while a counterclockwise rotation subtracts from the count value
+ * The encoder values are set to 0 at power-up and reset.
+ */
 long Motor_Controller::readEncoderCount(int address, uint8_t channel)
 {
 	if(channel==DC_1){ channel = 0x49; }
@@ -241,6 +320,13 @@ long Motor_Controller::readEncoderCount(int address, uint8_t channel)
 	return eCount;
 }
 
+/*
+ * Reads the encoder degree value. 
+ * This function is similar to the encoder count function, but it returns the motor shaft position in degrees. 
+ * The total degree count accumulation can range from -536,870,912 to 536,870,911.
+ * A clockwise rotation adds to the count value, while a counterclockwise rotation subtracts from the count value. 
+ * The encoder values are set to 0 at power-up and reset.
+ */
 long Motor_Controller::readEncoderDegrees(int address, uint8_t channel)
 {
 	if(channel==DC_1){ channel = 0x5B; }
@@ -259,6 +345,9 @@ long Motor_Controller::readEncoderDegrees(int address, uint8_t channel)
 	return eCount;
 }
 
+/*
+ * Reset the encoder count to 0 of one DC motor
+ */
 void Motor_Controller::resetEncoder(int address, uint8_t channel)
 {
 	if(channel==DC_1){ channel = 0x4C; }
@@ -268,12 +357,21 @@ void Motor_Controller::resetEncoder(int address, uint8_t channel)
 	I2c_Write(&i2c, address, data, 1);
 
 }
+
+/*
+ * Reset the encoder count to 0 of both DC motor
+ */
 void Motor_Controller::resetEncoders(int address)
 {
 	uint8_t data[1] = {0x4E};
 	I2c_Write(&i2c, address, data, 1);
 }
 
+/*
+ * Reads the busy flag read to check on the status of a DC motor that is operating in positional PID mode.
+ * The motor busy status will return “1” if it is moving toward a positional target (degrees or encoder count). 
+ * When it has reached its target and is in hold mode, the busy status will return “0.”
+ */
 int Motor_Controller::readMotorBusy(int address, uint8_t channel)
 {
 
@@ -288,6 +386,11 @@ int Motor_Controller::readMotorBusy(int address, uint8_t channel)
 	return data[0];
 
 }
+
+/*
+ * Reads the DC motor current of each of one DC motor
+ * return current in milliamps
+ */
 int Motor_Controller::readMotorCurrent(int address, uint8_t channel)
 {
 
@@ -307,11 +410,19 @@ int Motor_Controller::readMotorCurrent(int address, uint8_t channel)
 }
 
 
-/***********************/
-/****SERVO**************/
-/***********************/
+/************************************
+ *    __  _  _        _  
+ *   (_  |_ |_) \  / / \ 
+ *   __) |_ | \  \/  \_/ 
+ *    
+ * SERVO                   
+ ************************************/
 
-
+/*
+ * Sets the speed of one servo motor
+ * The speed parameter can be 0 to 100
+ * servo defaults to 100 speed
+ */
 void Motor_Controller::setServoSpeed(int address, uint8_t channel, uint8_t servospeed){
 
 	if(channel==SERVO_1){ channel = 0x28; }
@@ -325,12 +436,22 @@ void Motor_Controller::setServoSpeed(int address, uint8_t channel, uint8_t servo
 	I2c_Write(&i2c, address, data, 2);
 }
 
-
+/*
+ * Sets the speed of all six servo motor
+ * The speed parameter can be 0 to 100
+ * servo defaults to 100 speed
+ */
 void Motor_Controller::setServoSpeeds(int address, uint8_t servospeed1, uint8_t servospeed2, uint8_t servospeed3, uint8_t servospeed4, uint8_t servospeed5, uint8_t servospeed6){
 	uint8_t data[7] = {0x2E, servospeed1, servospeed2, servospeed3, servospeed4, servospeed5, servospeed6};
 	I2c_Write(&i2c, address, data, 7);
 }
 
+
+/*
+ * Sets the angular position of one servo motor
+ * The position range is 0 to 180 degrees
+ * Out of range value are ignored.
+ */
 void Motor_Controller::setServoPosition(int address, uint8_t channel, uint8_t servoposition){
 
 	if(channel==SERVO_1){channel= 0x2F;}
@@ -344,12 +465,23 @@ void Motor_Controller::setServoPosition(int address, uint8_t channel, uint8_t se
 	I2c_Write(&i2c, address, data, 2);
 }
 
-
+/*
+ * Sets the angular position of all six servo motor
+ * The position range is 0 to 180 degrees
+ * Out of range value are ignored.
+ */
 void Motor_Controller::setServoPositions(int address, uint8_t servoposition1,uint8_t servoposition2,uint8_t servoposition3,uint8_t servoposition4,uint8_t servoposition5,uint8_t servoposition6){
 	uint8_t data[7] = {0x35, servoposition1, servoposition2, servoposition3, servoposition4, servoposition5, servoposition6};
 	I2c_Write(&i2c, address, data, 7);
 }
 
+
+/*
+Set state of servo motor
+ clockwise -> 100
+ stopped -> 0
+ counterclockwise -> -100
+*/
 void Motor_Controller::setCRServoState(int address, uint8_t channel, uint8_t servospeed)
 {
 	if(channel==CR_SERVO_1){channel= 0x36;}
@@ -359,6 +491,11 @@ void Motor_Controller::setCRServoState(int address, uint8_t channel, uint8_t ser
 	I2c_Write(&i2c, address, data, 2);
 }
 
+
+/*
+ * Reads the position of one servo motor 
+ * return degrees between 0 and 180
+ */
 uint8_t Motor_Controller::readServoPosition(int address, uint8_t channel){
 
 	if(channel==SERVO_1){channel= 0x38;}
@@ -374,21 +511,3 @@ uint8_t Motor_Controller::readServoPosition(int address, uint8_t channel){
 
 	return data[0];
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-void Motor_Controller::waitFor (unsigned int secs) {
-    int retTime = time(0) + secs;   // Get finishing time.
-    while (time(0) < retTime);               // Loop until it arrives.
-}
-
