@@ -35,7 +35,7 @@ private:
 
 public:
 
-    Motor_Controller(MyRio_I2c* i2c);
+    Motor_Controller();
 
     NiFpga_Status init(NiFpga_Session* myrio_session);
 

@@ -6,9 +6,8 @@
 using namespace std;
 
 
-Motor_Controller::Motor_Controller(MyRio_I2c* i2c)
+Motor_Controller::Motor_Controller()
 {
-	this->i2c = *i2c;
 }
 
 /*

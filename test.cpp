@@ -23,10 +23,7 @@ int main(int argc, char **argv)
 		return status;
 	}
 
-	MyRio_I2c i2c;
-	status = Utils::setupI2CB(&myrio_session, &i2c);
-
-	Motor_Controller mc = Motor_Controller(&i2c);
+	Motor_Controller mc = Motor_Controller();
 	mc.controllerEnable(DC);
 	mc.controllerEnable(SERVO);
 
